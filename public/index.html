@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Glowgrid </title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #6200ea, #b388ff);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Section Styles */
+        section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        section h2 {
+            font-size: 1.8rem;
+            color: #6200ea;
+            margin-bottom: 1rem;
+        }
+
+        /* Form Elements */
+        input[type="file"],
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            max-width: 300px;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            color: #333;
+        }
+
+        button {
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem 0;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #7c4dff;
+        }
+
+        /* Image Preview */
+        #imagePreview {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        #imagePreview img {
+            max-width: 200px;
+            margin: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #cropPreview {
+            max-width: 200px;
+            margin-top: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Download Section */
+        #resizedImageSection {
+            display: none;
+            text-align: center;
+        }
+
+        #downloadLink {
+            display: none;
+            background-color: #28a745;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        #downloadLink:hover {
+            background-color: #218838;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #333;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+
+        footer a {
+            color: #b388ff;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 600px;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .close:hover {
+            color: #6200ea;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            section {
+                padding: 1rem;
+            }
+
+            input[type="file"],
+            input[type="number"],
+            input[type="text"],
+            select {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1> Glowgrid </h1>
+        <p>Upload, crop, watermark, and compress your images with ease.</p>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Upload Section -->
+        <section id="uploadSection">
+            <h2>Upload Your Images</h2>
+            <p>Select one or more JPEG or PNG images to process.</p>
+            <input type="file" id="uploadImage" accept="image/jpeg,image/png" multiple>
+            <div id="imagePreview">
+                <h3>Uploaded Image Previews</h3>
+                <!-- Dynamic image previews will be added here -->
+            </div>
+        </section>
+
+        <!-- Processing Options -->
+        <section id="optionsSection">
+            <h2>Configure Processing Options</h2>
+            <p>Customize how your images will be processed.</p>
+            <div>
+                <label for="sizeLimit">Size Limit (KB):</label>
+                <input type="number" id="sizeLimit" min="10" value="100" required>
+                <small>Specify the maximum file size for each output image.</small>
+            </div>
+            <div>
+                <label for="outputFormat">Output Format:</label>
+                <select id="outputFormat">
+                    <option value="jpeg" selected>JPEG</option>
+                    <option value="png">PNG</option>
+                </select>
+                <small>Choose the format for the processed images.</small>
+            </div>
+            <div>
+                <label for="cropWidth">Crop Width (px):</label>
+                <input type="number" id="cropWidth" min="1" placeholder="Optional">
+                <small>Enter the desired width for cropping (leave blank to skip).</small>
+            </div>
+            <div>
+                <label for="cropHeight">Crop Height (px):</label>
+                <input type="number" id="cropHeight" min="1" placeholder="Optional">
+                <small>Enter the desired height for cropping (leave blank to skip).</small>
+            </div>
+            <div>
+                <button id="cropButton">Preview Crop</button>
+                <img id="cropPreview" style="display: none;" alt="Crop Preview">
+                <p><small>Note: Crop preview is an approximation and may differ slightly from the final output.</small></p>
+            </div>
+            <div>
+                <label for="watermarkText">Watermark Text:</label>
+                <input type="text" id="watermarkText" placeholder="Enter watermark text (optional)">
+                <button id="watermarkButton">Preview Watermark</button>
+                <p><small>Note: Watermark preview is an approximation and may differ slightly from the final output.</small></p>
+            </div>
+            <div>
+                <button id="uploadButton">Process Images and Download</button>
+            </div>
+        </section>
+
+        <!-- Download Section -->
+        <section id="resizedImageSection">
+            <h2>Download Your Processed Images</h2>
+            <p>Your images have been processed successfully. Click the link below to download them as a ZIP file.</p>
+            <a id="downloadLink">Download Processed Images (ZIP)</a>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Glowgrid. All rights reserved.</p>
+        <p>
+            <a href="#terms">Terms of Service</a> |
+            <a href="#privacy">Privacy Policy</a> |
+            <a href="#about">About</a>
+        </p>
+    </footer>
+
+    <!-- Modals -->
+    <div id="terms" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Terms of Service</h2>
+            <p>
+                Welcome to Glowgrid By using this service, you agree to the following terms:
+            </p>
+            <ul>
+                <li>You may only upload images you own or have permission to use.</li>
+                <li>Processed images are stored temporarily and deleted after 20 minutes.</li>
+                <li>We are not responsible for any loss of data or misuse of uploaded images.</li>
+                <li>This service is provided "as is" without warranties of any kind.</li>
+            </ul>
+            <p>
+                If you have any questions, please contact us via the About page.
+            </p>
+        </div>
+    </div>
+
+    <div id="privacy" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Privacy Policy</h2>
+            <p>
+                Your privacy is important to us. This policy outlines how we handle your data:
+            </p>
+            <ul>
+                <li>Uploaded images are stored temporarily and deleted after 20 minutes.</li>
+                <li>We do not collect personal information unless explicitly provided.</li>
+                <li>No data is shared with third parties.</li>
+                <li>We use cookies to improve your experience (e.g., session management).</li>
+            </ul>
+            <p>
+                For more details, please contact us via the About page.
+            </p>
+        </div>
+    </div>
+
+    <div id="about" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>About</h2>
+          <img src="https://i.ibb.co/JFvYXcyC/IMG-20241125-WA0021.jpg" alt="Ritabrata Roy Portrait" style="display: block;max-width: 100px; border-radius: 8px; margin: 1rem auto;">
+<p style="text-align: center; font-weight: bold;">Lead Developer: Ritabrata Roy</p>
+            <p>
+                Glowgrid is a free, user-friendly tool for resizing, cropping, and watermarking images. Created by lead developer Ritabrata Roy, with support from developers Supriya Manna and Mangala Naskar, Glowgrid aims to make image editing simple, accessible, and efficient.
+
+
+            </p>
+            <p>
+                Features:
+            </p>
+            <ul>
+                <li>Upload multiple JPEG/PNG images.</li>
+                <li>Customize output size, format, crop, and watermark.</li>
+                <li>Download processed images as a ZIP file.</li>
+            </ul>
+            <p>
+                Contact us at: ritabroy500@gmail.com or contact us on instagram: editor_arya07
+            </p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
