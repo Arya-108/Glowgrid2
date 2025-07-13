@@ -1,3 +1,4 @@
+// Initialize elements
 const uploadImage = document.getElementById('uploadImage');
 const sizeLimit = document.getElementById('sizeLimit');
 const outputFormat = document.getElementById('outputFormat');
@@ -14,10 +15,11 @@ const downloadLink = document.getElementById('downloadLink');
 
 let selectedFiles = [];
 
+// Validate and preview uploaded images
 uploadImage.addEventListener('change', () => {
     selectedFiles = Array.from(uploadImage.files).filter(file => {
         const isValidType = ['image/jpeg', 'image/png'].includes(file.type);
-        const isValidSize = file.size <= 10 * 1024 * 1024;
+        const isValidSize = file.size <= 10 * 1024 * 1024; // Max 10MB
         return isValidType && isValidSize;
     });
 
@@ -27,7 +29,8 @@ uploadImage.addEventListener('change', () => {
         return;
     }
 
-    imagePreview.innerHTML = '';
+    // Display previews for all images
+    imagePreview.innerHTML = ''; // Clear previous previews
     selectedFiles.forEach(file => {
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
@@ -38,6 +41,7 @@ uploadImage.addEventListener('change', () => {
     imagePreview.style.display = 'block';
 });
 
+// Crop preview (client-side)
 cropButton.addEventListener('click', () => {
     if (selectedFiles.length === 0) {
         alert('Please upload an image first!');
@@ -47,12 +51,13 @@ cropButton.addEventListener('click', () => {
     const cropW = parseInt(cropWidth.value);
     const cropH = parseInt(cropHeight.value);
 
+    // Validate crop dimensions
     if ((cropW && cropW <= 0) || (cropH && cropH <= 0)) {
         alert('Crop width and height must be positive numbers.');
         return;
     }
 
-    const file = selectedFiles[0];
+    const file = selectedFiles[0]; // Preview crop for first image only
     const reader = new FileReader();
     reader.onload = () => {
         const img = new Image();
@@ -60,6 +65,7 @@ cropButton.addEventListener('click', () => {
         img.onload = () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
+            // Use Math.min to align with server logic
             canvas.width = cropW ? Math.min(cropW, img.width) : img.width;
             canvas.height = cropH ? Math.min(cropH, img.height) : img.height;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -70,6 +76,7 @@ cropButton.addEventListener('click', () => {
     reader.readAsDataURL(file);
 });
 
+// Watermark preview (client-side)
 watermarkButton.addEventListener('click', () => {
     if (selectedFiles.length === 0) {
         alert('Please upload an image first!');
@@ -82,7 +89,7 @@ watermarkButton.addEventListener('click', () => {
         return;
     }
 
-    const file = selectedFiles[0];
+    const file = selectedFiles[0]; // Preview watermark for first image only
     const reader = new FileReader();
     reader.onload = () => {
         const img = new Image();
@@ -93,10 +100,11 @@ watermarkButton.addEventListener('click', () => {
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
+            // Align with server: 32px sans-serif, position at height - 40
             ctx.font = '32px sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.fillText(watermark, 20, canvas.height - 40);
-            imagePreview.innerHTML = '';
+            imagePreview.innerHTML = ''; // Clear previous previews
             const previewImg = document.createElement('img');
             previewImg.src = canvas.toDataURL('image/jpeg');
             previewImg.style.maxWidth = '200px';
@@ -105,83 +113,78 @@ watermarkButton.addEventListener('click', () => {
             imagePreview.style.display = 'block';
         };
     };
-   ='#downloadLink'>Download Processed Images</a>
-        </section>
-    </main>
+    reader.readAsDataURL(file);
+});
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 Glowgrid. All rights reserved.</p>
-        <p>
-            <a href="#terms">Terms of Service</a> |
-            <a href="#privacy">Privacy Policy</a> |
-            <a href="#about">About</a>
-        </p>
-    </footer>
+// Process images (server-side)
+uploadButton.addEventListener('click', async () => {
+    if (selectedFiles.length === 0 || !sizeLimit.value) {
+        alert('Please upload at least one image and specify the size limit.');
+        return;
+    }
 
-    <!-- Modals -->
-    <div id="terms" class="modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <h2>Terms of Service</h2>
-            <p>
-                Welcome to Glowgrid By using this service, you agree to the following terms:
-            </p>
-            <ul>
-                <li>You may only upload images you own or have permission to use.</li>
-                <li>Processed images are stored temporarily and deleted after 20 minutes.</li>
-                <li>We are not responsible for any loss of data or misuse of uploaded images.</li>
-                <li>This service is provided "as is" without warranties of any kind.</li>
-            </ul>
-            <p>
-                If you have any questions, please contact us via the About page.
-            </p>
-        </div>
-    </div>
+    const cropW = parseInt(cropWidth.value);
+    const cropH = parseInt(cropHeight.value);
+    const watermark = watermarkText.value.trim();
 
-    <div id="privacy" class="modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <h2>Privacy Policy</h2>
-            <p>
-                Your privacy is important to us. This policy outlines how we handle your data:
-            </p>
-            <ul>
-                <li>Uploaded images are stored temporarily and deleted after 20 minutes.</li>
-                <li>We do not collect personal information unless explicitly provided.</li>
-                <li>No data is shared with third parties.</li>
-                <li>We use cookies to improve your experience (e.g., session management).</li>
-            </ul>
-            <p>
-                For more details, please contact us via the About page.
-            </p>
-        </div>
-    </div>
+    // Validate crop dimensions
+    if ((cropW && cropW <= 0) || (cropH && cropH <= 0)) {
+        alert('Crop width and height must be positive numbers.');
+        return;
+    }
 
-    <div id="about" class="modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <h2>About</h2>
-            <img src="https://i.ibb.co/JFvYXcyC/IMG-20241125-WA0021.jpg" alt="Ritabrata Roy Portrait" style="display: block; max-width: 100px; border-radius: 8px; margin: 1rem auto;">
-            <p style="text-align: center; font-weight: bold;">Lead Developer: Ritabrata Roy</p>
-            <p>
-                Glowgrid is a free, user-friendly tool for resizing, cropping, and watermarking images. Created by lead developer Ritabrata Roy, with support from developers Supriya Manna and Mangala Naskar, Glowgrid aims to make image editing simple, accessible, and efficient.
-            </p>
-            <p>
-                Features:
-            </p>
-            <ul>
-                <li>Upload multiple JPEG/PNG images.</li>
-                <li>Customize output size, format, crop, and watermark.</li>
-                <li>Download processed images as a ZIP file.</li>
-            </ul>
-            <p>
-                Contact us at: ritabroy500@gmail.com or contact us on Instagram: editor_arya07
-            </p>
-        </div>
-    </div>
+    const formData = new FormData();
+    selectedFiles.forEach(file => formData.append('images', file));
+    formData.append('sizeLimit', sizeLimit.value);
+    formData.append('outputFormat', outputFormat.value);
+    formData.append('cropWidth', cropW || '');
+    formData.append('cropHeight', cropH || '');
+    formData.append('watermarkText', watermark || '');
 
-    <!-- JavaScript -->
-    <script src="script.js"></script>
-</body>
-</html>
+    try {
+        const response = await fetch('/process-images', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Server error: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+        if (blob.type !== 'application/zip') {
+            throw new Error('Invalid response: Expected a ZIP file');
+        }
+
+        const url = URL.createObjectURL(blob);
+        resizedImageSection.style.display = 'block';
+        downloadLink.href = url;
+        downloadLink.download = 'resized_images.zip';
+        downloadLink.style.display = 'inline-block';
+    } catch (err) {
+        alert('Error processing images: ' + err.message);
+    }
+});
+
+// Modal toggling
+document.querySelectorAll('a[href="#terms"], a[href="#privacy"], a[href="#about"]').forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const modalId = link.getAttribute('href').substring(1);
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    });
+});
+
+// Close modals
+document.querySelectorAll('.close').forEach(close => {
+    close.addEventListener('click', () => {
+        const modal = close.parentElement;
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
